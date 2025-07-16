@@ -434,12 +434,20 @@ static void indev_keypad_proc(lv_indev_t * i, lv_indev_data_t * data)
             lv_group_set_editing(g, false); /*Editing is not used by KEYPAD is be sure it is disabled*/
             lv_group_focus_next(g);
             if(indev_reset_check(&i->proc)) return;
+
+            lv_group_send_data(g, data->key);
+            if (indev_reset_check(&i->proc))
+                return;
         }
         /*Move the focus on PREV*/
         else if(data->key == LV_KEY_PREV) {
             lv_group_set_editing(g, false); /*Editing is not used by KEYPAD is be sure it is disabled*/
             lv_group_focus_prev(g);
             if(indev_reset_check(&i->proc)) return;
+
+            lv_group_send_data(g, data->key);
+            if (indev_reset_check(&i->proc))
+                return;
         }
         else if(!dis) {
             /*Simulate a press on the object if ENTER was pressed*/
@@ -499,12 +507,20 @@ static void indev_keypad_proc(lv_indev_t * i, lv_indev_data_t * data)
                 lv_group_set_editing(g, false); /*Editing is not used by KEYPAD is be sure it is disabled*/
                 lv_group_focus_next(g);
                 if(indev_reset_check(&i->proc)) return;
+
+                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED_REPEAT, indev_act);
+                if (indev_reset_check(&i->proc))
+                    return;
             }
             /*Move the focus on PREV again*/
             else if(data->key == LV_KEY_PREV) {
                 lv_group_set_editing(g, false); /*Editing is not used by KEYPAD is be sure it is disabled*/
                 lv_group_focus_prev(g);
                 if(indev_reset_check(&i->proc)) return;
+
+                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED_REPEAT, indev_act);
+                if (indev_reset_check(&i->proc))
+                    return;
             }
             /*Just send other keys again to the object (e.g. 'A' or `LV_GROUP_KEY_RIGHT)*/
             else {
@@ -652,11 +668,13 @@ static void indev_encoder_proc(lv_indev_t * i, lv_indev_data_t * data)
             }
             else if(data->key == LV_KEY_LEFT) {
                 /*emulate encoder left*/
-                data->enc_diff--;
+                data->enc_diff -= lv_group_get_editing(g)? 5 : 1;
+                // data->enc_diff--;
             }
             else if(data->key == LV_KEY_RIGHT) {
                 /*emulate encoder right*/
-                data->enc_diff++;
+                data->enc_diff += lv_group_get_editing(g) ? 5 : 1;
+                // data->enc_diff++;
             }
             else {
                 lv_group_send_data(g, data->key);
